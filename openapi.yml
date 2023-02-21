@@ -1,0 +1,555 @@
+openapi: 3.0.0
+info:
+  title: SDX LC
+  description: SDX Topology validation
+  version: '1.0.0'
+  contact:
+    email: lmarinve@fiu.edu
+servers:
+  - url: 'http://localhost:8080'
+tags:
+- name: topology
+  description: Everything about your domain topology
+  externalDocs:
+    description: Find out more
+    url: https://www.atlanticwave-sdx.net
+- name: node
+  description: everything about a node in your domain
+- name: link
+  description: everything about a link in your domain
+- name: user
+  description: Operations about user
+  externalDocs:
+    description: Find out more about our store
+    url: https://www.atlanticwave-sdx.net
+paths:
+  /v1/topology/{topology_id}:
+    parameters:
+      - schema:
+          type: integer
+        name: topology_id
+        in: path
+        required: true
+        description: Id of an existing topology.
+    get:
+      tags:
+      - topology
+      summary: get an existing topology
+      description: ID of the topology
+      operationId: get_topology_id
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+              examples:
+                Get Topology:
+                  value:
+                    topology_id: urn:sdx:topology:amlight.net
+                    name: AmLight-OXP
+                    version: 2
+                    model_version: 1.0.0
+                    time_stamp: '2021-07-07 21:19:40'
+                    nodes: []
+                    links: []
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Topology not found
+        "default":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      tags:
+      - topology
+      summary: Update an existing topology
+      description: "ID of topology that needs to be updated."
+      operationId: update_topology
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/topology'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Topology not found
+        "405":
+          description: Validation exception
+        "default":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    delete:
+      summary: Delete a Topology
+      description: id of topology that nedds to be deleted.
+      tags: []
+      operationId: delete_topology
+      responses:
+        "200":
+          description: OK
+        "default":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /v1/topology:
+    get:
+      tags:
+      - topology
+      summary: get an existing topology
+      description: ID of the topology
+      operationId: get_topology_list
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+    post:
+      tags:
+      - topology
+      summary: Send a new topology to SDX-LC
+      description: Create a topology
+      operationId: add_topology
+      requestBody:
+        description: placed for adding a new topology
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/topology'
+            examples:
+              post Topology:
+                value:
+                  topology_id: urn:sdx:topology:amlight.net
+                  name: AmLight-OXP
+                  version: 2
+                  model_version: 1.0.0
+                  time_stamp: '2021-07-07 21:19:40'
+                  nodes: []
+                  links: []
+        required: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+        "400":
+          description: Invalid Connection
+        "405":
+          description: Invalid input
+        "default":
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /users/{user_id}:
+    parameters:
+      - schema:
+          type: string
+        name: user_id
+        in: path
+        required: true
+        description: Id of an existing user.
+    get:
+      tags: []
+      summary: Get User Info by User ID
+      description: Retrieve the information of the user with the matching user ID.
+      operationId: get_user_user_id
+      responses:
+        '200':
+          description: User Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get User Alice Smith:
+                  value:
+                    user_id: 142
+                    user_name: asmith
+                    first_name: Alice
+                    last_name: Smith
+                    email: alice.smith@gmail.com
+                    password: '1997-10-31'
+                    user_status: true
+                    created_date: '2019-08-24'
+        '404':
+          description: User Not Found
+        'default':
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      tags: []
+      summary: Update User Information
+      description: Update the information of an existing user.
+      operationId: patch_users_user_id
+      responses:
+        '200':
+          description: User Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Updated User Rebecca Baker:
+                  value:
+                    topology_id: 13
+                    user_name: rbaker
+                    first_name: Rebecca
+                    last_name: Baker
+                    email: rebecca@gmail.com
+                    password: '1985-10-02'
+                    user_status: false
+                    created_date: '2019-08-24'
+        '404':
+          description: User Not Found
+        '409':
+          description: Email Already Taken
+        'default':
+          description: Unexpected error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                  description: 'If a new email is given, the user status property will be set to false.'
+                password:
+                  type: string
+                user_status:
+                  type: boolean
+            examples:
+              Update user_name:
+                value:
+                  user_name: rbecca
+              Update First Name:
+                value:
+                  first_name: Rebecca
+              Update Email:
+                value:
+                  email: rebecca@gmail.com
+              Update Last Name & Password:
+                value:
+                  last_name: Baker
+                  password: '1985-10-02'
+        description: Patch user properties to update.
+  /user:
+    post:
+      tags: []
+      summary: Create New User
+      description: Create a new user
+      operationId: post_user
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Bob Fellow:
+                  value:
+                    topology_id: 12
+                    user_name: bfellow
+                    first_name: Bob
+                    last_name: Fellow
+                    email: bob.fellow@gmail.com
+                    password: '1996-08-24'
+                    user_status: false
+                    created_date: '2020-11-18'
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+        'default':
+          description: Unexpected error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - user_name
+                - email
+                - password
+            examples:
+              Create User Bob Fellow:
+                value:
+                  user_name: bob
+                  first_name: Bob
+                  last_name: Fellow
+                  email: bob.fellow@gmail.com
+                  password: '1996-08-24'
+        description: Post the necessary fields for the API to create a new user.
+components:
+  schemas:
+    topology:
+      type: object
+      required:
+        - topology_id
+        - name
+        - version
+        - model_version
+        - time_stamp
+        - nodes
+        - links
+      properties:
+        topology_id:
+          type: string
+          pattern: '^((urn:sdx:topology:)[A-Za-z_.-]*$)'
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[A-Za-z_.-]*$'
+          example: amLight
+        version:
+          type: integer
+          format: int64
+          example: 1
+        model_version:
+          type: string
+        time_stamp:
+          type: string
+          format: date-time
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/node'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/link'
+    node:
+      type: object
+      required:
+        - node_id
+        - name
+        - location
+        - ports
+      properties:
+        node_id:
+          type: string
+          pattern: '^((urn:sdx:node:)[A-Za-z_.-]*$)'
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[A-Za-z_.-]*$'
+          example: amLight
+        location:
+          $ref: '#/components/schemas/location'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/port'
+    link:
+      type: object
+      required:
+        - link_id
+        - name
+        - ports
+        - bandwidth
+        - type
+        - status
+        - state
+      properties:
+        link_id:
+          type: string
+          pattern: '^((urn:sdx:link:)[A-Za-z_.-]*$)'
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[A-Za-z_.-]*$'
+        ports:
+          type: array
+          items:
+            $ref: '#/components/schemas/port'
+        type:
+          type: string
+          enum: ['intra','inter']
+        bandwidth:
+          type: number
+          minimum: 1
+          maximum: 1000000
+        residual_bandwidth:
+          type: number
+          minimum: 0
+          maximum: 100
+        latency:
+          type: number
+          minimum: 1
+          maximum: 1000000
+        packet_loss:
+          type: number
+          minimum: 0
+          maximum: 100
+        availability:
+          type: number
+          minimum: 0
+          maximum: 100
+        status:
+          type: string
+          enum: ['up','down','error']
+        state:
+          type: string
+          enum: ['enabled','disabled','maintenance']
+    port:
+      type: object
+      required:
+        - port_id
+        - name
+        - node
+        - type
+        - status
+        - state
+      properties:
+        port_id:
+          type: string
+          pattern: '^((urn:sdx:port:)[A-Za-z_.-]*$)'
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[A-Za-z_.-]*$'
+        node:
+          type: string
+        type:
+          type: string
+          enum: ['100FE','1GE','10GE','25GE','40GE','50GE','100GE','400GE','Other']
+        mtu:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum: ['up','down','error']
+        state:
+          type: string
+          enum: ['enabled','disabled']
+    location:
+      type: object
+      required:
+        - address
+        - latitude
+        - longitude
+      properties:
+        address:
+          type: string
+        latitude:
+          type: number
+          minimum: -90.0
+          maximum: 90.0
+        longitude:
+          type: number
+          minimum: -90.0
+          maximum: 90.0
+    User:
+      title: User
+      type: object
+      description: 'Users'
+      x-examples:
+        Alice Smith:
+          user_id: 142
+          user_name: asmith
+          first_name: Alice
+          last_name: Smith
+          email: alice.smith@gmail.com
+          password: '1997-10-31'
+          user_status: true
+      required:
+        - user_name
+        - email
+        - password
+      properties:
+        user_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the given user.
+        user_name:
+          type: string
+          pattern: '^[A-Za-z]*$'
+          minLength: 3
+        first_name:
+          type: string
+          pattern: '^[A-Za-z]*$'
+          minLength: 3
+        last_name:
+          type: string
+          pattern: '^[A-Za-z]*$'
+          minLength: 3
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          pattern: '^[A-Za-z0-9!@#$%^&*_.-]*$'
+          minLength: 8
+          example: '1997-10-31'
+        user_status:
+          type: boolean
+          description: Set to true if the user's email has been verified.
+        created_date:
+          type: string
+          format: date
+          description: The date that the user was created.
+    ErrorMessage:
+      type: object
+      required:
+        - error_code
+        - error_message
+      properties:
+        error_code:
+          type: string
+        error_message:
+          type: string

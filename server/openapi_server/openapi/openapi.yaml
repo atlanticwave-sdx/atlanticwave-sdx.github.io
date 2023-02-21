@@ -1,0 +1,850 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: lmarinve@fiu.edu
+  description: SDX Topology validation
+  title: SDX LC
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+tags:
+- description: Everything about your domain topology
+  externalDocs:
+    description: Find out more
+    url: https://www.atlanticwave-sdx.net
+  name: topology
+- description: everything about a node in your domain
+  name: node
+- description: everything about a link in your domain
+  name: link
+- description: Operations about user
+  externalDocs:
+    description: Find out more about our store
+    url: https://www.atlanticwave-sdx.net
+  name: user
+paths:
+  /user:
+    post:
+      description: Create a new user
+      operationId: post_user
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Create User Bob Fellow:
+                value:
+                  user_name: bob
+                  first_name: Bob
+                  last_name: Fellow
+                  email: bob.fellow@gmail.com
+                  password: 1996-08-24
+            schema:
+              $ref: '#/components/schemas/post_user_request'
+        description: Post the necessary fields for the API to create a new user.
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                New User Bob Fellow:
+                  value:
+                    topology_id: 12
+                    user_name: bfellow
+                    first_name: Bob
+                    last_name: Fellow
+                    email: bob.fellow@gmail.com
+                    password: 1996-08-24
+                    user_status: false
+                    created_date: 2020-11-18
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User Created
+        "400":
+          description: Missing Required Information
+        "409":
+          description: Email Already Taken
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Create New User
+      tags: []
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /users/{user_id}:
+    get:
+      description: Retrieve the information of the user with the matching user ID.
+      operationId: get_user_user_id
+      parameters:
+      - description: Id of an existing user.
+        explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                Get User Alice Smith:
+                  value:
+                    user_id: 142
+                    user_name: asmith
+                    first_name: Alice
+                    last_name: Smith
+                    email: alice.smith@gmail.com
+                    password: 1997-10-31
+                    user_status: true
+                    created_date: 2019-08-24
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User Found
+        "404":
+          description: User Not Found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Get User Info by User ID
+      tags: []
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    patch:
+      description: Update the information of an existing user.
+      operationId: patch_users_user_id
+      parameters:
+      - description: Id of an existing user.
+        explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            examples:
+              Update user_name:
+                value:
+                  user_name: rbecca
+              Update First Name:
+                value:
+                  first_name: Rebecca
+              Update Email:
+                value:
+                  email: rebecca@gmail.com
+              Update Last Name & Password:
+                value:
+                  last_name: Baker
+                  password: 1985-10-02
+            schema:
+              $ref: '#/components/schemas/patch_users_user_id_request'
+        description: Patch user properties to update.
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                Updated User Rebecca Baker:
+                  value:
+                    topology_id: 13
+                    user_name: rbaker
+                    first_name: Rebecca
+                    last_name: Baker
+                    email: rebecca@gmail.com
+                    password: 1985-10-02
+                    user_status: false
+                    created_date: 2019-08-24
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User Updated
+        "404":
+          description: User Not Found
+        "409":
+          description: Email Already Taken
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Update User Information
+      tags: []
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /v1/topology:
+    get:
+      description: ID of the topology
+      operationId: get_topology_list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+          description: ok
+      summary: get an existing topology
+      tags:
+      - topology
+      x-openapi-router-controller: openapi_server.controllers.topology_controller
+    post:
+      description: Create a topology
+      operationId: add_topology
+      requestBody:
+        content:
+          application/json:
+            examples:
+              post Topology:
+                value:
+                  topology_id: urn:sdx:topology:amlight.net
+                  name: AmLight-OXP
+                  version: 2
+                  model_version: 1.0.0
+                  time_stamp: 2021-07-07 21:19:40
+                  nodes: []
+                  links: []
+            schema:
+              $ref: '#/components/schemas/topology'
+        description: placed for adding a new topology
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+          description: successful operation
+        "400":
+          description: Invalid Connection
+        "405":
+          description: Invalid input
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Send a new topology to SDX-LC
+      tags:
+      - topology
+      x-openapi-router-controller: openapi_server.controllers.topology_controller
+  /v1/topology/{topology_id}:
+    delete:
+      description: id of topology that nedds to be deleted.
+      operationId: delete_topology
+      parameters:
+      - description: Id of an existing topology.
+        explode: false
+        in: path
+        name: topology_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Delete a Topology
+      tags: []
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    get:
+      description: ID of the topology
+      operationId: get_topology_id
+      parameters:
+      - description: Id of an existing topology.
+        explode: false
+        in: path
+        name: topology_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                Get Topology:
+                  value:
+                    topology_id: urn:sdx:topology:amlight.net
+                    name: AmLight-OXP
+                    version: 2
+                    model_version: 1.0.0
+                    time_stamp: 2021-07-07 21:19:40
+                    nodes: []
+                    links: []
+              schema:
+                $ref: '#/components/schemas/topology'
+          description: ok
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Topology not found
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: get an existing topology
+      tags:
+      - topology
+      x-openapi-router-controller: openapi_server.controllers.topology_controller
+    patch:
+      description: ID of topology that needs to be updated.
+      operationId: update_topology
+      parameters:
+      - description: Id of an existing topology.
+        explode: false
+        in: path
+        name: topology_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/topology'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/topology'
+          description: successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Topology not found
+        "405":
+          description: Validation exception
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unexpected error
+      summary: Update an existing topology
+      tags:
+      - topology
+      x-openapi-router-controller: openapi_server.controllers.topology_controller
+components:
+  schemas:
+    topology:
+      example:
+        topology_id: topology_id
+        model_version: model_version
+        nodes:
+        - name: amLight
+          location:
+            address: address
+            latitude: -75.5850925717018
+            longitude: 18.494211295267263
+          ports:
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          node_id: node_id
+        - name: amLight
+          location:
+            address: address
+            latitude: -75.5850925717018
+            longitude: 18.494211295267263
+          ports:
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          node_id: node_id
+        time_stamp: 2000-01-23T04:56:07.000+00:00
+        name: amLight
+        links:
+        - residual_bandwidth: 56.37376656633328
+          packet_loss: 70.61401241503108
+          bandwidth: 596213.7954549266
+          latency: 230214.35847988783
+          name: name
+          availability: 93.01444243932576
+          state: enabled
+          ports:
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          type: intra
+          link_id: link_id
+          status: up
+        - residual_bandwidth: 56.37376656633328
+          packet_loss: 70.61401241503108
+          bandwidth: 596213.7954549266
+          latency: 230214.35847988783
+          name: name
+          availability: 93.01444243932576
+          state: enabled
+          ports:
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          - node: node
+            name: name
+            port_id: port_id
+            state: enabled
+            type: 100FE
+            mtu: 1
+            status: up
+          type: intra
+          link_id: link_id
+          status: up
+        version: 1
+      properties:
+        topology_id:
+          pattern: "^((urn:sdx:topology:)[A-Za-z_.-]*$)"
+          title: topology_id
+          type: string
+        name:
+          example: amLight
+          maxLength: 30
+          minLength: 3
+          pattern: "^[A-Za-z_.-]*$"
+          title: name
+          type: string
+        version:
+          example: 1
+          format: int64
+          title: version
+          type: integer
+        model_version:
+          title: model_version
+          type: string
+        time_stamp:
+          format: date-time
+          title: time_stamp
+          type: string
+        nodes:
+          items:
+            $ref: '#/components/schemas/node'
+          title: nodes
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/link'
+          title: links
+          type: array
+      required:
+      - links
+      - model_version
+      - name
+      - nodes
+      - time_stamp
+      - topology_id
+      - version
+      title: topology
+      type: object
+    node:
+      example:
+        name: amLight
+        location:
+          address: address
+          latitude: -75.5850925717018
+          longitude: 18.494211295267263
+        ports:
+        - node: node
+          name: name
+          port_id: port_id
+          state: enabled
+          type: 100FE
+          mtu: 1
+          status: up
+        - node: node
+          name: name
+          port_id: port_id
+          state: enabled
+          type: 100FE
+          mtu: 1
+          status: up
+        node_id: node_id
+      properties:
+        node_id:
+          pattern: "^((urn:sdx:node:)[A-Za-z_.-]*$)"
+          title: node_id
+          type: string
+        name:
+          example: amLight
+          maxLength: 30
+          minLength: 3
+          pattern: "^[A-Za-z_.-]*$"
+          title: name
+          type: string
+        location:
+          $ref: '#/components/schemas/location'
+        ports:
+          items:
+            $ref: '#/components/schemas/port'
+          title: ports
+          type: array
+      required:
+      - location
+      - name
+      - node_id
+      - ports
+      title: node
+      type: object
+    link:
+      example:
+        residual_bandwidth: 56.37376656633328
+        packet_loss: 70.61401241503108
+        bandwidth: 596213.7954549266
+        latency: 230214.35847988783
+        name: name
+        availability: 93.01444243932576
+        state: enabled
+        ports:
+        - node: node
+          name: name
+          port_id: port_id
+          state: enabled
+          type: 100FE
+          mtu: 1
+          status: up
+        - node: node
+          name: name
+          port_id: port_id
+          state: enabled
+          type: 100FE
+          mtu: 1
+          status: up
+        type: intra
+        link_id: link_id
+        status: up
+      properties:
+        link_id:
+          pattern: "^((urn:sdx:link:)[A-Za-z_.-]*$)"
+          title: link_id
+          type: string
+        name:
+          maxLength: 30
+          minLength: 3
+          pattern: "^[A-Za-z_.-]*$"
+          title: name
+          type: string
+        ports:
+          items:
+            $ref: '#/components/schemas/port'
+          title: ports
+          type: array
+        type:
+          enum:
+          - intra
+          - inter
+          title: type
+          type: string
+        bandwidth:
+          maximum: 1000000
+          minimum: 1
+          title: bandwidth
+          type: number
+        residual_bandwidth:
+          maximum: 100
+          minimum: 0
+          title: residual_bandwidth
+          type: number
+        latency:
+          maximum: 1000000
+          minimum: 1
+          title: latency
+          type: number
+        packet_loss:
+          maximum: 100
+          minimum: 0
+          title: packet_loss
+          type: number
+        availability:
+          maximum: 100
+          minimum: 0
+          title: availability
+          type: number
+        status:
+          enum:
+          - up
+          - down
+          - error
+          title: status
+          type: string
+        state:
+          enum:
+          - enabled
+          - disabled
+          - maintenance
+          title: state
+          type: string
+      required:
+      - bandwidth
+      - link_id
+      - name
+      - ports
+      - state
+      - status
+      - type
+      title: link
+      type: object
+    port:
+      example:
+        node: node
+        name: name
+        port_id: port_id
+        state: enabled
+        type: 100FE
+        mtu: 1
+        status: up
+      properties:
+        port_id:
+          pattern: "^((urn:sdx:port:)[A-Za-z_.-]*$)"
+          title: port_id
+          type: string
+        name:
+          maxLength: 30
+          minLength: 3
+          pattern: "^[A-Za-z_.-]*$"
+          title: name
+          type: string
+        node:
+          title: node
+          type: string
+        type:
+          enum:
+          - 100FE
+          - 1GE
+          - 10GE
+          - 25GE
+          - 40GE
+          - 50GE
+          - 100GE
+          - 400GE
+          - Other
+          title: type
+          type: string
+        mtu:
+          format: int32
+          title: mtu
+          type: integer
+        status:
+          enum:
+          - up
+          - down
+          - error
+          title: status
+          type: string
+        state:
+          enum:
+          - enabled
+          - disabled
+          title: state
+          type: string
+      required:
+      - name
+      - node
+      - port_id
+      - state
+      - status
+      - type
+      title: port
+      type: object
+    location:
+      example:
+        address: address
+        latitude: -75.5850925717018
+        longitude: 18.494211295267263
+      properties:
+        address:
+          title: address
+          type: string
+        latitude:
+          maximum: 90.0
+          minimum: -90.0
+          title: latitude
+          type: number
+        longitude:
+          maximum: 90.0
+          minimum: -90.0
+          title: longitude
+          type: number
+      required:
+      - address
+      - latitude
+      - longitude
+      title: location
+      type: object
+    User:
+      description: Users
+      example:
+        user_status: true
+        password: 1997-10-31
+        user_id: 0
+        user_name: user_name
+        last_name: last_name
+        created_date: 2000-01-23
+        first_name: first_name
+        email: email
+      properties:
+        user_id:
+          description: Unique identifier for the given user.
+          format: int64
+          title: user_id
+          type: integer
+        user_name:
+          minLength: 3
+          pattern: "^[A-Za-z]*$"
+          title: user_name
+          type: string
+        first_name:
+          minLength: 3
+          pattern: "^[A-Za-z]*$"
+          title: first_name
+          type: string
+        last_name:
+          minLength: 3
+          pattern: "^[A-Za-z]*$"
+          title: last_name
+          type: string
+        email:
+          format: email
+          title: email
+          type: string
+        password:
+          example: 1997-10-31
+          minLength: 8
+          pattern: "^[A-Za-z0-9!@#$%^&*_.-]*$"
+          title: password
+          type: string
+        user_status:
+          description: Set to true if the user's email has been verified.
+          title: user_status
+          type: boolean
+        created_date:
+          description: The date that the user was created.
+          format: date
+          title: created_date
+          type: string
+      required:
+      - email
+      - password
+      - user_name
+      title: User
+      type: object
+      x-examples:
+        Alice Smith:
+          user_id: 142
+          user_name: asmith
+          first_name: Alice
+          last_name: Smith
+          email: alice.smith@gmail.com
+          password: 1997-10-31
+          user_status: true
+    ErrorMessage:
+      properties:
+        error_code:
+          title: error_code
+          type: string
+        error_message:
+          title: error_message
+          type: string
+      required:
+      - error_code
+      - error_message
+      title: ErrorMessage
+      type: object
+    patch_users_user_id_request:
+      properties:
+        user_name:
+          title: user_name
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        email:
+          description: "If a new email is given, the user status property will be\
+            \ set to false."
+          title: email
+          type: string
+        password:
+          title: password
+          type: string
+        user_status:
+          title: user_status
+          type: boolean
+      title: patch_users_user_id_request
+      type: object
+    post_user_request:
+      properties:
+        user_name:
+          title: user_name
+          type: string
+        first_name:
+          title: first_name
+          type: string
+        last_name:
+          title: last_name
+          type: string
+        email:
+          title: email
+          type: string
+        password:
+          title: password
+          type: string
+      required:
+      - email
+      - password
+      - user_name
+      title: post_user_request
+      type: object
