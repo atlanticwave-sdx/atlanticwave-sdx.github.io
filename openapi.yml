@@ -1,555 +1,521 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: SDX LC
-  description: SDX Topology validation
-  version: '1.0.0'
+  title: EazyShop Products APIs Definition
+  description: |
+      # About Us
+      **EazyShop** is a open market product selling company. Any website can list our products by  using our _APIs_. Shipping & other logistics will be taken care by us. You will get an `Affiliate commision` for selling our products.
+      # Categories suported
+        - Mobiles
+          - Apple
+          - Samsung
+          - OnePlus
+        - Laptops
+        - Televisions
+        - Headphones
+  termsOfService: https://eazyshop.com/terms/
+  x-custom-info:
+    comment: Some comments
+    developers:
+      - name: John Doe
+        email: john@doe.com
+      - name: Jane Doe
+        email: jane@doe.com
   contact:
-    email: lmarinve@fiu.edu
+    name: API Support
+    url: https://www.eazyshop.com/support
+    email: support@eazyshop.com
+  license:
+    name: EazyShop License
+    url: https://www.eazyshop.com/licenses/LICENSE-2.0.html
+  version: 0.0.1
+externalDocs:
+  description: External Documentation
+  url: https://example.com
 servers:
-  - url: 'https://atlanticwave-sdx.github.io'
+  - url: https://development.eazyshop-server.com/v1
+    description: Development server
 tags:
-- name: topology
-  description: Everything about your domain topology
-  externalDocs:
-    description: Find out more
-    url: https://www.atlanticwave-sdx.net
-- name: node
-  description: everything about a node in your domain
-- name: link
-  description: everything about a link in your domain
-- name: user
-  description: Operations about user
-  externalDocs:
-    description: Find out more about our store
-    url: https://www.atlanticwave-sdx.net
+  - name: Categories
+    description: Categories-related operations
+  - name: Products
+    description: Products-related operations
+  - name: Orders
+    description: Orders-related operations
+security:
+  - BasicAuth: []
+  - BearerAuth: []
+  - ApiKeyAuth: []
+  - oAuth2AuthCode:
+    - read
+    - write
+    - admin
 paths:
-  /v1/topology/{topology_id}:
-    parameters:
-      - schema:
-          type: integer
-        name: topology_id
-        in: path
-        required: true
-        description: Id of an existing topology.
+  /categories:
     get:
       tags:
-      - topology
-      summary: get an existing topology
-      description: ID of the topology
-      operationId: get_topology_id
+        - Categories
+      summary: List all catgories
+      description: Returns the list of categories supported by EazyShop
+      operationId: getCategories
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+            minimum: 100
+            maximum: 1000
+          examples:
+            mobiles:
+              summary: Use this example for mobiles
+              value: 101
+            laptops:
+              value: 102
+            headphones:
+              value: 103
+            televisions:
+              value: 104
       responses:
-        "200":
-          description: ok
+        '200':
+          description: A list of catgories
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/topology'
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
               examples:
-                Get Topology:
+                all-categories-data:
+                  summary: Categories example data
                   value:
-                    topology_id: urn:sdx:topology:amlight.net
-                    name: AmLight-OXP
-                    version: 2
-                    model_version: 1.0.0
-                    time_stamp: '2021-07-07 21:19:40'
-                    nodes: []
-                    links: []
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Topology not found
-        "default":
-          description: Unexpected error
+                    - categoryId: 101
+                      name: Mobiles
+                    - categoryId: 102
+                      name: Laptops
+                    - categoryId: 103
+                      name: Headphones
+                    - categoryId: 104
+                      name: Televisions
+                single-category-data:
+                  summary: Single category example data
+                  value:
+                    - categoryId: 101
+                      name: Mobiles
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /categories/{categoryId}:
+    get:
+      tags:
+        - Categories
+      summary: Return category details
+      description: Returns the category details from EazyShop
+      operationId: getCategoryDetails
+      security: []
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 100
+            maximum: 1000
+          example: 102
+      responses:
+        '200':
+          description: Return category details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorMessage'
-    patch:
+                $ref: "#/components/schemas/Category"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /products:
+    get:
       tags:
-      - topology
-      summary: Update an existing topology
-      description: "ID of topology that needs to be updated."
-      operationId: update_topology
+        - Products
+      summary: List all products
+      description: |
+        Returns the list of products supported by EazyShop
+      operationId: getProducts
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+            minimum: 100
+            maximum: 1000
+          example: 101
+      responses:
+        '200':
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+              examples:
+                products-data:
+                  summary: Products example data
+                  value:
+                    - productId: 101
+                      name: Apple IPhone 13 Pro
+                      price: 999.99
+                      categoryName: Mobiles
+                      quantity: 96
+                    - productId: 102
+                      name: Samsung S22 Ultra
+                      price: 899.99
+                      categoryName: Mobiles
+                      quantity: 121
+                    - productId: 103
+                      name: OnePlus 10 Pro 5G
+                      price: 750.99
+                      categoryName: Mobiles
+                      quantity: 67
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: Return product details
+      description: |
+        Returns the product details from  EazyShop
+      operationId: getProductDetails
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 100
+            maximum: 1000
+          example: 101
+      responses:
+        '200':
+          description: Return product details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Create Order
+      description: |
+        Post order details to EazyShop for processing
+        and shipping
+      operationId: saveOrderDetails
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/topology'
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Product"
+                address:
+                  $ref: "#/components/schemas/Address"
       responses:
-        "200":
-          description: successful operation
+        '201':
+          description: Order created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/topology'
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Topology not found
-        "405":
-          description: Validation exception
-        "default":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
+                type: object
+                properties:
+                  orderId:
+                    type: integer
+          links:
+            GetOrderByOrderId:
+              $ref: '#/components/links/GetOrderByOrderId'
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags:
+        - Orders
+      summary: Update Order
+      description: |
+        Update order details to EazyShop for processing
+        and shipping
+      operationId: updateOrderDetails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: integer
+                products:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Product"
+                address:
+                  $ref: "#/components/schemas/Address"
+      responses:
+        '200':
+          description: Order details updated successfully
+        '500':
+          $ref: "#/components/responses/InternalServerError"
     delete:
-      summary: Delete a Topology
-      description: id of topology that nedds to be deleted.
-      tags: []
-      operationId: delete_topology
+      tags:
+        - Orders
+      summary: Delete Order
+      description: Delete order details from EazyShop
+      operationId: deleteOrderDetails
+      parameters:
+        - $ref: "#/components/parameters/orderIdQueryParam"
       responses:
-        "200":
-          description: OK
-        "default":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-  /v1/topology:
+        '204':
+          description: Order details cancelled successfully
+        '500':
+          $ref: "#/components/responses/InternalServerError"
     get:
       tags:
-      - topology
-      summary: get an existing topology
-      description: ID of the topology
-      operationId: get_topology_list
+        - Orders
+      summary: Get Order Details
+      description: Get order details from EazyShop
+      operationId: getOrderDetails
+      parameters:
+        - $ref: "#/components/parameters/orderIdQueryParam"
       responses:
-        "200":
-          description: ok
+        '200':
+          description: Fetch Order details successfully
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/topology'
+              schema: 
+                type: object
+                properties:
+                  orderId:
+                    type: integer
+                  products:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  address:
+                    $ref: "#/components/schemas/Address"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /orders/{orderId}:
+    get:
+      tags:
+        - Orders
+      summary: Get Order Details
+      description: Get order details from EazyShop
+      operationId: getOrderDetailsUsingPathParam
+      deprecated: true
+      parameters:
+        - $ref: "#/components/parameters/orderIdPathParam"
+      responses:
+        '200':
+          description: Fetch Order details successfully
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  orderId:
+                    type: integer
+                  products:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  address:
+                    $ref: "#/components/schemas/Address"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /oneOfOrder:
     post:
       tags:
-      - topology
-      summary: Send a new topology to SDX-LC
-      description: Create a topology
-      operationId: add_topology
-      requestBody:
-        description: placed for adding a new topology
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/topology'
-            examples:
-              post Topology:
-                value:
-                  topology_id: urn:sdx:topology:amlight.net
-                  name: AmLight-OXP
-                  version: 2
-                  model_version: 1.0.0
-                  time_stamp: '2021-07-07 21:19:40'
-                  nodes: []
-                  links: []
-        required: true
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/topology'
-        "400":
-          description: Invalid Connection
-        "405":
-          description: Invalid input
-        "default":
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-  /users/{user_id}:
-    parameters:
-      - schema:
-          type: string
-        name: user_id
-        in: path
-        required: true
-        description: Id of an existing user.
-    get:
-      tags: []
-      summary: Get User Info by User ID
-      description: Retrieve the information of the user with the matching user ID.
-      operationId: get_user_user_id
-      responses:
-        '200':
-          description: User Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                Get User Alice Smith:
-                  value:
-                    user_id: 142
-                    user_name: asmith
-                    first_name: Alice
-                    last_name: Smith
-                    email: alice.smith@gmail.com
-                    password: '1997-10-31'
-                    user_status: true
-                    created_date: '2019-08-24'
-        '404':
-          description: User Not Found
-        'default':
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-    patch:
-      tags: []
-      summary: Update User Information
-      description: Update the information of an existing user.
-      operationId: patch_users_user_id
-      responses:
-        '200':
-          description: User Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                Updated User Rebecca Baker:
-                  value:
-                    topology_id: 13
-                    user_name: rbaker
-                    first_name: Rebecca
-                    last_name: Baker
-                    email: rebecca@gmail.com
-                    password: '1985-10-02'
-                    user_status: false
-                    created_date: '2019-08-24'
-        '404':
-          description: User Not Found
-        '409':
-          description: Email Already Taken
-        'default':
-          description: Unexpected error
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
+      - Orders
+      summary: Insert OneOf the Order Details
+      description: Insert OneOf the Order Details into Eazyshop
+      operationId: demoOfOneOf
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                user_name:
-                  type: string
-                first_name:
-                  type: string
-                last_name:
-                  type: string
-                email:
-                  type: string
-                  description: 'If a new email is given, the user status property will be set to false.'
-                password:
-                  type: string
-                user_status:
-                  type: boolean
-            examples:
-              Update user_name:
-                value:
-                  user_name: rbecca
-              Update First Name:
-                value:
-                  first_name: Rebecca
-              Update Email:
-                value:
-                  email: rebecca@gmail.com
-              Update Last Name & Password:
-                value:
-                  last_name: Baker
-                  password: '1985-10-02'
-        description: Patch user properties to update.
-  /user:
-    post:
-      tags: []
-      summary: Create New User
-      description: Create a new user
-      operationId: post_user
-      responses:
-        '200':
-          description: User Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                New User Bob Fellow:
-                  value:
-                    topology_id: 12
-                    user_name: bfellow
-                    first_name: Bob
-                    last_name: Fellow
-                    email: bob.fellow@gmail.com
-                    password: '1996-08-24'
-                    user_status: false
-                    created_date: '2020-11-18'
-        '400':
-          description: Missing Required Information
-        '409':
-          description: Email Already Taken
-        'default':
-          description: Unexpected error
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/ErrorMessage'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_name:
-                  type: string
-                first_name:
-                  type: string
-                last_name:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
+                products:
+                  type: object
+                  oneOf:
+                    - $ref: '#/components/schemas/Mobile'
+                    - $ref: '#/components/schemas/Laptop'
+                address:
+                  $ref: '#/components/schemas/Address'
               required:
-                - user_name
-                - email
-                - password
-            examples:
-              Create User Bob Fellow:
-                value:
-                  user_name: bob
-                  first_name: Bob
-                  last_name: Fellow
-                  email: bob.fellow@gmail.com
-                  password: '1996-08-24'
-        description: Post the necessary fields for the API to create a new user.
+                - products
+                - address
+      responses:
+        '200':
+          description: Order placed successfully
+  /anyOfOrder:
+    get:
+      tags:
+      - Orders
+      summary: Get Order Details
+      description: Get Order Details based on Order ID
+      operationId: demoOfAnyOf
+      parameters:
+        - $ref: "#/components/parameters/orderIdQueryParam"
+        - name: fetchType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - summary
+              - details
+          description: >
+            Fetch Type:
+             * `summary` - Will provide Order Summary
+             * `details` - Will provide Order Summary & Order Address
+      responses:
+        '200':
+          description: Return product details
+          content:
+            application/json:
+              schema:
+               anyOf:
+                - $ref: '#/components/schemas/OrderSummary'
+                - $ref: '#/components/schemas/OrderAddress'      
 components:
+  parameters:
+    orderIdQueryParam:
+      name: orderId
+      in: query
+      required: true
+      schema:
+        type: integer
+    orderIdPathParam:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        type: integer
   schemas:
-    topology:
+    Address:
       type: object
-      required:
-        - topology_id
-        - name
-        - version
-        - model_version
-        - time_stamp
-        - nodes
-        - links
       properties:
-        topology_id:
+        addressLine:
           type: string
-          pattern: '^((urn:sdx:topology:)[A-Za-z_.-]*$)'
-        name:
+        city:
           type: string
-          minLength: 3
-          maxLength: 30
-          pattern: '^[A-Za-z_.-]*$'
-          example: amLight
-        version:
-          type: integer
-          format: int64
-          example: 1
-        model_version:
-          type: string
-        time_stamp:
-          type: string
-          format: date-time
-        nodes:
-          type: array
-          items:
-            $ref: '#/components/schemas/node'
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/link'
-    node:
-      type: object
-      required:
-        - node_id
-        - name
-        - location
-        - ports
-      properties:
-        node_id:
-          type: string
-          pattern: '^((urn:sdx:node:)[A-Za-z_.-]*$)'
-        name:
-          type: string
-          minLength: 3
-          maxLength: 30
-          pattern: '^[A-Za-z_.-]*$'
-          example: amLight
-        location:
-          $ref: '#/components/schemas/location'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/port'
-    link:
-      type: object
-      required:
-        - link_id
-        - name
-        - ports
-        - bandwidth
-        - type
-        - status
-        - state
-      properties:
-        link_id:
-          type: string
-          pattern: '^((urn:sdx:link:)[A-Za-z_.-]*$)'
-        name:
-          type: string
-          minLength: 3
-          maxLength: 30
-          pattern: '^[A-Za-z_.-]*$'
-        ports:
-          type: array
-          items:
-            $ref: '#/components/schemas/port'
-        type:
-          type: string
-          enum: ['intra','inter']
-        bandwidth:
-          type: number
-          minimum: 1
-          maximum: 1000000
-        residual_bandwidth:
-          type: number
-          minimum: 0
-          maximum: 100
-        latency:
-          type: number
-          minimum: 1
-          maximum: 1000000
-        packet_loss:
-          type: number
-          minimum: 0
-          maximum: 100
-        availability:
-          type: number
-          minimum: 0
-          maximum: 100
-        status:
-          type: string
-          enum: ['up','down','error']
         state:
           type: string
-          enum: ['enabled','disabled','maintenance']
-    port:
-      type: object
-      required:
-        - port_id
-        - name
-        - node
-        - type
-        - status
-        - state
-      properties:
-        port_id:
+          enum:
+            - California
+            - Texas
+            - Indiana
+            - NewYork
+        zipcode:
           type: string
-          pattern: '^((urn:sdx:port:)[A-Za-z_.-]*$)'
-        name:
-          type: string
-          minLength: 3
-          maxLength: 30
-          pattern: '^[A-Za-z_.-]*$'
-        node:
-          type: string
-        type:
-          type: string
-          enum: ['100FE','1GE','10GE','25GE','40GE','50GE','100GE','400GE','Other']
-        mtu:
-          type: integer
-          format: int32
-        status:
-          type: string
-          enum: ['up','down','error']
-        state:
-          type: string
-          enum: ['enabled','disabled']
-    location:
-      type: object
-      required:
-        - address
-        - latitude
-        - longitude
-      properties:
-        address:
-          type: string
-        latitude:
-          type: number
-          minimum: -90.0
-          maximum: 90.0
-        longitude:
-          type: number
-          minimum: -90.0
-          maximum: 90.0
-    User:
-      title: User
-      type: object
-      description: 'Users'
-      x-examples:
-        Alice Smith:
-          user_id: 142
-          user_name: asmith
-          first_name: Alice
-          last_name: Smith
-          email: alice.smith@gmail.com
-          password: '1997-10-31'
-          user_status: true
-      required:
-        - user_name
-        - email
-        - password
-      properties:
-        user_id:
-          type: integer
-          format: int64
-          description: Unique identifier for the given user.
-        user_name:
-          type: string
-          pattern: '^[A-Za-z]*$'
-          minLength: 3
-        first_name:
-          type: string
-          pattern: '^[A-Za-z]*$'
-          minLength: 3
-        last_name:
-          type: string
-          pattern: '^[A-Za-z]*$'
-          minLength: 3
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          pattern: '^[A-Za-z0-9!@#$%^&*_.-]*$'
-          minLength: 8
-          example: '1997-10-31'
-        user_status:
+        isOfficeAddress:
           type: boolean
-          description: Set to true if the user's email has been verified.
-        created_date:
+      required: [addressLine, city, state, zipcode]
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+        name:
+         type: string
+        price:
+          type: number
+          format: float
+        categoryName:
+          type: string
+          nullable: true
+        releaseDate:
           type: string
           format: date
-          description: The date that the user was created.
-    ErrorMessage:
+          readOnly: true
+        quantity:
+          type: integer
+          description: |
+            ***Quantity*** represents `stock` value when this field is being sent by EazyShop.Where as in the scenarios of consumer sending this feild, it represents `number of product items` inside the order. Consumers are expected to handle the scenario of stopping the end user <u>*when the stock value is 0*</u>
+    Category:
       type: object
-      required:
-        - error_code
-        - error_message
       properties:
-        error_code:
+        categoryId:
+          type: integer
+        name:
           type: string
-        error_message:
-          type: string
+    Mobile:
+      allOf:
+        - $ref: "#/components/schemas/Product"
+        - type: object
+          properties:
+            networkType:
+              type: string
+              enum:
+                - 4G
+                - 5G
+          required: [networkType]
+    Laptop:
+      allOf:
+        - $ref: "#/components/schemas/Product"
+        - type: object
+          properties:
+            ram:
+              type: string
+              enum:
+                - 8 GB
+                - 16 GB
+                - 32 GB
+          required: [ram]
+    OrderSummary:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    OrderAddress:
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+  responses:
+    InternalServerError:
+      description: |
+        An error occured while processing the request.
+        Please contact support@eazyshop.com
+  links:
+    GetOrderByOrderId:
+      description: >
+        The `orderId` value returned in the response can be used as input parameter in `GET /orders`.
+      operationId: getProductDetails
+      parameters:
+        orderId: '$response.body#/orderId'
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:        
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    oAuth2AuthCode:
+      type: oauth2
+      flows: 
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/api/oauth.access
+          scopes:
+            read: Read only access
+            write: Read Write access
+            admin: Admin access
